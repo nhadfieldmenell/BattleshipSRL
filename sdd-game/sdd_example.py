@@ -28,7 +28,7 @@ def main():
         lit = sdd.sdd_manager_literal(i, manager)
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
-    for model in model.models(alpha, sdd.sdd_manager_vtree(manager)):
+    for model in models.models(alpha, sdd.sdd_manager_vtree(manager)):
         print model
 
     print "yass"
