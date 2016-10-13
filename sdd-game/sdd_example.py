@@ -1,5 +1,11 @@
+"""Construct an SDD with n variables in which every model has exactly r true variables.
+
+Print out the models.
+"""
+
 #!/usr/bin/python
 import sdd
+import sys
 from inf import models
 
 
@@ -59,8 +65,10 @@ def start_manager(num_vars):
 
 
 def main():
-    num_vars = 5
-    num_trues = 3
+    if len(sys.argv) != 3:
+        print "usage: %s [NUM-VARS] [NUM-TRUES]" % sys.argv[0]
+        exit(1)
+    num_vars, num_trues = (int(sys.argv[1]), int(sys.argv[2]))
     manager = start_manager(num_vars)
     alpha = r_in_n(manager, num_trues, num_vars)
 
