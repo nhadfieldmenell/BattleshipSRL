@@ -19,10 +19,12 @@ def start_manager(num_vars):
 
 
 def main():
+    print "hello"
     num_vars = 5
     manager = start_manager(num_vars)
     alpha = sdd.sdd_manager_true(manager)
     for i in range(num_vars):
+        print i
         lit = sdd.sdd_manager_literal(i, manager)
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
