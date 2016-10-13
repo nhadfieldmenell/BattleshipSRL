@@ -62,6 +62,7 @@ def start_manager(num_vars):
 
 def main():
     num_vars = 5
+    num_trues = 3
     manager = start_manager(num_vars)
     """
     alpha = sdd.sdd_manager_true(manager)
@@ -69,7 +70,7 @@ def main():
         lit = sdd.sdd_manager_literal(-i, manager)
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
     """
-    alpha = r_in_n(manager, 3, 6)
+    alpha = r_in_n(manager, num_trues, num_vars)
 
     for model in models.models(alpha, sdd.sdd_manager_vtree(manager)):
         print models.str_model(model,var_count=num_vars)
