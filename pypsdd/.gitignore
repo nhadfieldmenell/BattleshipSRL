@@ -1,0 +1,16 @@
+*~
+*.dSYM
+*.o
+.DS_Store
+._*
+TAGS
+__MACOSX
+callgrind.*
+build
+debug
+cnf
+gmon.out
+tmp
+bak
+TODO
+*.pyc
