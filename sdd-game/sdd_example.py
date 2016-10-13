@@ -29,7 +29,7 @@ def main():
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
     for model in models.models(alpha, sdd.sdd_manager_vtree(manager)):
-        print model
+        print models.str_model(model,var_count=num_vars)
 
     print "yass"
 
