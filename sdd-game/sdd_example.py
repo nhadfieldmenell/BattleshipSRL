@@ -61,13 +61,14 @@ def start_manager(num_vars):
 def main():
     num_vars = 5
     manager = start_manager(num_vars)
-    """
+    #"""
     alpha = sdd.sdd_manager_true(manager)
     for i in range(1, num_vars+1):
-        lit = sdd.sdd_manager_literal(i, manager)
+        lit = sdd.sdd_manager_literal(-i, manager)
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
     """
     alpha = r_in_n(manager, 3, 6)
+    """
 
     for model in models.models(alpha, sdd.sdd_manager_vtree(manager)):
         print models.str_model(model,var_count=num_vars)
