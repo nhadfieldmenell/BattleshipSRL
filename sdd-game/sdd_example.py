@@ -20,7 +20,7 @@ def start_manager(num_vars):
 
 def main():
     num_vars = 5
-    man = start_manager(num_vars)
+    manager = start_manager(num_vars)
     alpha = sdd.sdd_manager_true(manager)
     for i in range(num_vars):
         lit = sdd.sdd_manager_literal(i, manager)
