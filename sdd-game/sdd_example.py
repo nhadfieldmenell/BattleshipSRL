@@ -17,6 +17,7 @@ def r_in_n(manager, r, n, cur=1):
         An SDD in which r of the variables in the range [cur, cur+1, ..., n] are true.
         The rest of the variables in that range are false.
     """
+    print r, " ", n, " ", cur
     alpha = sdd.sdd_manager_true(manager)
     if cur == n+1:
         pass
@@ -61,14 +62,13 @@ def start_manager(num_vars):
 def main():
     num_vars = 5
     manager = start_manager(num_vars)
-    #"""
+    """
     alpha = sdd.sdd_manager_true(manager)
     for i in range(1, num_vars+1):
         lit = sdd.sdd_manager_literal(-i, manager)
         alpha = sdd.sdd_conjoin(alpha, lit, manager)
     """
     alpha = r_in_n(manager, 3, 6)
-    """
 
     for model in models.models(alpha, sdd.sdd_manager_vtree(manager)):
         print models.str_model(model,var_count=num_vars)
