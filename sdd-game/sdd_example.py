@@ -19,7 +19,7 @@ def r_in_n(manager, r, n, cur=1):
     """
     alpha = sdd.sdd_manager_true(manager)
     if cur == n+1:
-        continue
+        pass
 
     elif r == 0:
         for i in range(cur, n+1):
