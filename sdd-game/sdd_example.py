@@ -24,6 +24,7 @@ def r_in_n(manager, r, n, cur=1):
 
     elif r == 0:
         for i in range(cur, n+1):
+            print i
             lit = sdd.sdd_manager_literal(-i, manager)
             alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
