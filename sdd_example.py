@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sdd
 
 def main():
