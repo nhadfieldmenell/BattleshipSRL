@@ -40,7 +40,7 @@ def r_in_n(manager, r, n, cur=1):
         gamma = sdd.sdd_manager_literal(-cur, manager)
         remainder_false = r_in_n(manager, r, n, cur+1)
         gamma = sdd.sdd_conjoin(gamma, remainder_false, manager)
-        alpha = sdd.sdd_disjoin(beta, gamma)
+        alpha = sdd.sdd_disjoin(beta, gamma, manager)
 
     return alpha
 
