@@ -23,19 +23,19 @@ def r_in_n(manager, r, n, cur=1):
 
     elif r == 0:
         for i in range(cur, n+1):
-            lit = sdd.manager.literal(-i, manager)
+            lit = sdd.sdd_manager_literal(-i, manager)
             alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
     elif r == n - cur + 1:
         for i in range(cur, n+1):
-            lit = sdd.manager.literal(i, manager)
+            lit = sdd.sdd_manager_literal(i, manager)
             alpha = sdd.sdd_conjoin(alpha, lit, manager)
 
     else:
-        beta = sdd.manager.literal(cur, manager)
+        beta = sdd.sdd_manager_literal(cur, manager)
         remainder_true = r_in_n(manager, r-1, n, cur+1)
         beta = sdd.sdd_conjoin(beta, remainder_true, manager)
-        gamma = sdd.manager.literal(-cur, manager)
+        gamma = sdd.sdd_manager_literal(-cur, manager)
         remainder_false = r_in_n(manager, r, n, cur+1)
         gamma = sdd.sdd_conjoin(gamma, remainder_false)
         alpha = sdd.sdd_disjoin(beta, gamma)
