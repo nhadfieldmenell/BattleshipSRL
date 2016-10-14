@@ -13,21 +13,36 @@ class board(object):
     """
     def __init__(self, dim, boats):
         self.dim = dim
-        self.board = [[0] * dim] * dim
+
+        """Empty spots are marked with a period, occupied and unguessed
+        are marked with a O, occupied and guessed is marked with an X.
+        """
+        self.board = [['.'] * dim] * dim
+        
+
+    def open_positions(self, size):
+        """Determine the eligible locations for a boat.
+
+        Args:
+            size: The size of the boat.
+
+        Returns:
+            A dict that map
+        """
 
     def print_board(self):
         sys.stdout.write('   ')
         for i in range(self.dim):
-            sys.stdout.write('%d ' % i)
+            sys.stdout.write('%s ' % i)
             if i < 10:
                 sys.stdout.write(' ')
         print '\n'
         for i in range(self.dim):
-            sys.stdout.write('%d ' % i)
+            sys.stdout.write('%s ' % i)
             if i < 10:
                 sys.stdout.write(' ')
             for j in range(self.dim):
-                sys.stdout.write('%d  ' % self.board[i][j])
+                sys.stdout.write('%s  ' % self.board[i][j])
             print '\n'
 
 def main():
