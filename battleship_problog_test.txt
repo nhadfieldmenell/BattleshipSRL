@@ -10,13 +10,20 @@ boat(second).
 0.5::horizontal(B); 0.5::vertical(B) :- boat(B).
 
 % there are boardsize * (boardsize + 1 - L) equally likely positions to place a horizontal boat of length L (same for vertical)
-1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 4, 1); 1/12::loc(B, 4, 2); 1/12::loc(B, 4, 3) :- boat(B), horizontal(B), length(B, 2).
-1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 1, 4); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 2, 4); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 3, 4) :- boat(B), vertical(B), length(B, 2).
+1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 4, 1); 1/12::loc(B, 4, 2); 1/12::loc(B, 4, 3) :- boat(B), horizontal(B), size(B, 2).
+1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 1, 4); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 2, 4); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 3, 4) :- boat(B), vertical(B), size(B, 2).
 
 
-occupied(Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
-occupied(Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
+occupied(B, Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
+occupied(B, Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
+
+not_allowed(B, Row, Col) :- boat(B), boat(C), not(B = C), occupied(C, Row, Col).
+not_allowed(B, Row, Col) :- unoccupied(Row, Col).
+boat_in(Row, Col) :- boat(B), occupied(B, Row, Col).
+
+\+occupied(B, Row, Col) :- boat(B), boat(C), not(B = C), occupied(C, Row, Col).
+\+occupied(B, Row, Col) :- boat(B), not(boat_in(Row, Col)).
 
 % do not need to worry about board size here, because we will only be given valid unoccupied evidence
-not(loc(B, Row, Z)) :- boat(B), horizontal(B), not(occupied(Row, Col)), length(B, L), Col-Z < L, Col-Z >= 0.
-not(loc(B, Z, Col)) :- boat(B), vertical(B), not(occupied(Row, Col)), length(B, L), Row-Z < L, Row-Z >= 0.
+not(loc(B, Row, Z)) :- boat(B), horizontal(B), not(occupied(B, Row, Col)), length(B, L), Col-Z < L, Col-Z >= 0.
+not(loc(B, Z, Col)) :- boat(B), vertical(B), not(occupied(B, Row, Col)), length(B, L), Row-Z < L, Row-Z >= 0.
