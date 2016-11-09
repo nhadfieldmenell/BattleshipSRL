@@ -2,9 +2,8 @@
 // 2 boats of length 2
 // 1-indexed
 
-board_size(board, 4).
-length(first, 2).
-length(second, 2).
+size(first, 2).
+size(second, 2).
 boat(first).
 boat(second).
 
@@ -15,8 +14,8 @@ boat(second).
 1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 1, 4); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 2, 4); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 3, 4) :- boat(B), vertical(B), length(B, 2).
 
 
-occupied(Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), length(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0, board_size(board, Bsize), Row <= Bsize, Col <= Bsize.
-occupied(Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), length(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0, board_size(board, Bsize), Row <= Bsize, Col <= Bsize.
+occupied(Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
+occupied(Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
 
 // do not need to worry about board size here, because we will only be given valid unoccupied evidence
 not(loc(B, Row, Z)) :- boat(B), horizontal(B), unoccupied(Row, Col), length(B, L), Col-Z < L, Col-Z >= 0.
