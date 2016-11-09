@@ -1,6 +1,6 @@
-// 4x4 board
-// 2 boats of length 2
-// 1-indexed
+% 4x4 board
+% 2 boats of length 2
+% 1-indexed
 
 size(first, 2).
 size(second, 2).
@@ -9,7 +9,7 @@ boat(second).
 
 0.5::horizontal(B); 0.5::vertical(B) :- boat(B).
 
-// there are boardsize * (boardsize + 1 - L) equally likely positions to place a horizontal boat of length L (same for vertical)
+% there are boardsize * (boardsize + 1 - L) equally likely positions to place a horizontal boat of length L (same for vertical)
 1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 4, 1); 1/12::loc(B, 4, 2); 1/12::loc(B, 4, 3) :- boat(B), horizontal(B), length(B, 2).
 1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 1, 4); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 2, 4); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 3, 4) :- boat(B), vertical(B), length(B, 2).
 
@@ -17,6 +17,6 @@ boat(second).
 occupied(Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
 occupied(Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
 
-// do not need to worry about board size here, because we will only be given valid unoccupied evidence
-not(loc(B, Row, Z)) :- boat(B), horizontal(B), unoccupied(Row, Col), length(B, L), Col-Z < L, Col-Z >= 0.
-not(loc(B, Z, Col)) :- boat(B), vertical(B), unoccupied(Row, Col), length(B, L), Row-Z < L, Row-Z >= 0.
+% do not need to worry about board size here, because we will only be given valid unoccupied evidence
+not(loc(B, Row, Z)) :- boat(B), horizontal(B), not(occupied(Row, Col)), length(B, L), Col-Z < L, Col-Z >= 0.
+not(loc(B, Z, Col)) :- boat(B), vertical(B), not(occupied(Row, Col)), length(B, L), Row-Z < L, Row-Z >= 0.
