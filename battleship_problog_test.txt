@@ -1,0 +1,18 @@
+// 4x4 board
+// 2 boats of length 2
+// 1-indexed
+
+board_size(board, 4).
+length(first, 2).
+length(second, 2).
+boat(first).
+boat(second).
+
+0.5::horizontal(B); 0.5::vertical(B) :- boat(B).
+
+occupied(Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), length(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0, board_size(board, Bsize), Row <= Bsize, Col <= Bsize.
+occupied(Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), length(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0, board_size(board, Bsize), Row <= Bsize, Col <= Bsize.
+
+// do not need to worry about board size here, because we will only be given valid unoccupied evidence
+not(loc(B, Row, Z)) :- boat(B), horizontal(B), unoccupied(Row, Col), length(B, L), Col-Z < L, Col-Z >= 0.
+not(loc(B, Z, Col)) :- boat(B), vertical(B), unoccupied(Row, Col), length(B, L), Row-Z < L, Row-Z >= 0.
