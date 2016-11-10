@@ -8,6 +8,24 @@ boat(first).
 boat(second).
 
 0.5::horizontal(B); 0.5::vertical(B) :- boat(B).
+%occupied(A, Row, Col); occupied(B, Row, Col) :- boat(A), boat(B), boat_in(Row, Col).
+
+double_stacked_1_1 :- boat(B), boat(C), not(B = C), occupied(C, 1, 1), occupied(B, 1, 1).
+double_stacked_1_2 :- boat(B), boat(C), not(B = C), occupied(C, 1, 2), occupied(B, 1, 2).
+double_stacked_1_3 :- boat(B), boat(C), not(B = C), occupied(C, 1, 3), occupied(B, 1, 3).
+double_stacked_1_4 :- boat(B), boat(C), not(B = C), occupied(C, 1, 4), occupied(B, 1, 4).
+double_stacked_2_1 :- boat(B), boat(C), not(B = C), occupied(C, 2, 1), occupied(B, 2, 1).
+double_stacked_2_2 :- boat(B), boat(C), not(B = C), occupied(C, 2, 2), occupied(B, 2, 2).
+double_stacked_2_3 :- boat(B), boat(C), not(B = C), occupied(C, 2, 3), occupied(B, 2, 3).
+double_stacked_2_4 :- boat(B), boat(C), not(B = C), occupied(C, 2, 4), occupied(B, 2, 4).
+double_stacked_3_1 :- boat(B), boat(C), not(B = C), occupied(C, 3, 1), occupied(B, 3, 1).
+double_stacked_3_2 :- boat(B), boat(C), not(B = C), occupied(C, 3, 2), occupied(B, 3, 2).
+double_stacked_3_3 :- boat(B), boat(C), not(B = C), occupied(C, 3, 3), occupied(B, 3, 3).
+double_stacked_3_4 :- boat(B), boat(C), not(B = C), occupied(C, 3, 4), occupied(B, 3, 4).
+double_stacked_4_1 :- boat(B), boat(C), not(B = C), occupied(C, 4, 1), occupied(B, 4, 1).
+double_stacked_4_2 :- boat(B), boat(C), not(B = C), occupied(C, 4, 2), occupied(B, 4, 2).
+double_stacked_4_3 :- boat(B), boat(C), not(B = C), occupied(C, 4, 3), occupied(B, 4, 3).
+double_stacked_4_4 :- boat(B), boat(C), not(B = C), occupied(C, 4, 4), occupied(B, 4, 4).
 
 % there are boardsize * (boardsize + 1 - L) equally likely positions to place a horizontal boat of length L (same for vertical)
 1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 4, 1); 1/12::loc(B, 4, 2); 1/12::loc(B, 4, 3) :- boat(B), horizontal(B), size(B, 2).
@@ -17,13 +35,65 @@ boat(second).
 occupied(B, Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
 occupied(B, Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
 
-not_allowed(B, Row, Col) :- boat(B), boat(C), not(B = C), occupied(C, Row, Col).
-not_allowed(B, Row, Col) :- unoccupied(Row, Col).
 boat_in(Row, Col) :- boat(B), occupied(B, Row, Col).
-
-\+occupied(B, Row, Col) :- boat(B), boat(C), not(B = C), occupied(C, Row, Col).
-\+occupied(B, Row, Col) :- boat(B), not(boat_in(Row, Col)).
 
 % do not need to worry about board size here, because we will only be given valid unoccupied evidence
 not(loc(B, Row, Z)) :- boat(B), horizontal(B), not(occupied(B, Row, Col)), length(B, L), Col-Z < L, Col-Z >= 0.
 not(loc(B, Z, Col)) :- boat(B), vertical(B), not(occupied(B, Row, Col)), length(B, L), Row-Z < L, Row-Z >= 0.
+
+
+evidence(not(double_stacked_1_1)).
+evidence(not(double_stacked_1_2)).
+evidence(not(double_stacked_1_3)).
+evidence(not(double_stacked_1_4)).
+evidence(not(double_stacked_2_1)).
+evidence(not(double_stacked_2_2)).
+evidence(not(double_stacked_2_3)).
+evidence(not(double_stacked_2_4)).
+evidence(not(double_stacked_3_1)).
+evidence(not(double_stacked_3_2)).
+evidence(not(double_stacked_3_3)).
+evidence(not(double_stacked_3_4)).
+evidence(not(double_stacked_4_1)).
+evidence(not(double_stacked_4_2)).
+evidence(not(double_stacked_4_3)).
+evidence(not(double_stacked_4_4)).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%TESTING%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+query(boat_in(1,1)).
+query(boat_in(1,3)).
+query(occupied(second, 1, 1)).
+query(occupied(first,1,1)).
+
+%query(occupied(first,1,2)).
+%query(occupied(second,1,2)).
+
+%query(loc(second, 1,1)).
+%query(loc(second,1,2)).
+
+%query(occupied(first,1,1)).
+%query(occupied(second,1,1)).
+%query(boat_in(1,2)).
+%query(boat_in(1,3)).
+%query(boat_in(1,4)).
+%query(boat_in(2,1)).
+%query(boat_in(2,2)).
+%query(boat_in(2,3)).
+%query(boat_in(2,4)).
+%query(boat_in(3,1)).
+%query(boat_in(3,2)).
+%query(boat_in(3,3)).
+%query(boat_in(3,4)).
+%query(boat_in(4,4)).
+%query(boat_in(4,1)).
+%query(boat_in(4,2)).
+%query(boat_in(4,3)).
+%query(boat_in(4,4)).
+%query(loc(first, 2,2)).
