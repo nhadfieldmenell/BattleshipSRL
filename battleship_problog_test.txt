@@ -13,8 +13,8 @@ boat(second).
 double_stacked :- boat(B), boat(C), not(B = C), between(1, 4, Row), between(1, 4, Col), occupied(B, Row, Col), occupied(C, Row, Col).
 
 % there are boardsize * (boardsize + 1 - L) equally likely positions to place a horizontal boat of length L (same for vertical)
-1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 4, 1); 1/12::loc(B, 4, 2); 1/12::loc(B, 4, 3) :- boat(B), horizontal(B), size(B, 2).
-1/12::loc(B, 1, 1); 1/12::loc(B, 1, 2); 1/12::loc(B, 1, 3); 1/12::loc(B, 1, 4); 1/12::loc(B, 2, 1); 1/12::loc(B, 2, 2); 1/12::loc(B, 2, 3); 1/12::loc(B, 2, 4); 1/12::loc(B, 3, 1); 1/12::loc(B, 3, 2); 1/12::loc(B, 3, 3); 1/12::loc(B, 3, 4) :- boat(B), vertical(B), size(B, 2).
+1/12::loc(B, Row, Col) :-  boat(B), between(1, 4, Row), between(1, 3, Col), horizontal(B), size(B, 2).
+1/12::loc(B, Row, Col) :-  boat(B), between(1, 3, Row), between(1, 4, Col), vertical(B), size(B, 2).
 
 
 occupied(B, Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
