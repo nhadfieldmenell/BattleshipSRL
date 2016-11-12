@@ -15,7 +15,7 @@ size(boat_1, 3).
 1/15::loc(B, Row, Col) :- boat(B), between(1, 3, Row), between(1, 5, Col), vertical(B), size(B, 3).
 
 
-occupies(b, row, col) :- boat(b), horizontal(b), loc(b, row, z), size(b, l), col-z < l, col-z >= 0, row > 0, col > 0.
+occupies(B, Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
 occupies(B, Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
 
 boat_in(Row, Col) :- boat(B), occupies(B, Row, Col).
