@@ -1,0 +1,42 @@
+boat(boat_0).
+size(boat_0, 2).
+
+boat(boat_1).
+size(boat_1, 2).
+
+boat(boat_2).
+size(boat_2, 2).
+
+
+0.5::horizontal(B); 0.5::vertical(B) :- boat(B).
+
+
+1/12::loc(B, Row, Col) :- boat(B), between(1, 4, Row), between(1, 3, Col), horizontal(B), size(B, 2).
+1/12::loc(B, Row, Col) :- boat(B), between(1, 3, Row), between(1, 4, Col), vertical(B), size(B, 2).
+
+
+occupies(B, Row, Col) :- boat(B), horizontal(B), loc(B, Row, Z), size(B, L), Col-Z < L, Col-Z >= 0, Row > 0, Col > 0.
+occupies(B, Row, Col) :- boat(B), vertical(B), loc(B, Z, Col), size(B, L), Row-Z < L, Row-Z >= 0, Row > 0, Col > 0.
+
+boat_in(Row, Col) :- boat(B), occupies(B, Row, Col).
+
+
+row_col_range(Row, Col) :- between(1, 4, Row), between(1, 4, Col).
+
+pos_in_range(B, Row1, Col1, Row2, Col2) :- boat(B), horizontal(B), Row1 = Row2, size(B, L), Col1-Col2 < L, Col1-Col2 >= 0.
+pos_in_range(B, Row1, Col1, Row2, Col2) :- boat(B), vertical(B), Col1 = Col2, size(B, L), Row1-Row2 < L, Row1-Row2 >= 0.
+
+double_stacked_constraint :- boat(B), boat(C), not(B = C), row_col_range(Row, Col), occupies(B, Row, Col), occupies(C, Row, Col).
+two_places_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), not(Row1 = Row2), not(Col1 = Col2), loc(B, Row1, Col1), loc(B, Row2, Col2).
+boat_in_unoccupies_constraint :- boat(B), row_col_range(Row, Col), not(boat_in(Row,Col)), occupies(B, Row, Col).
+loc_not_occupies_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), not(occupies(B, Row1, Col1)), loc(B, Row2, Col2), pos_in_range(B, Row1, Col1, Row2, Col2).
+occupies_not_far_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), occupies(B, Row1, Col1), loc(B, Row2, Col2), not(pos_in_range(B, Row1, Col1, Row2, Col2)).
+located_nowhere_constraint :- boat(B), not(loc(B, 1, 1)), not(loc(B, 1, 2)), not(loc(B, 1, 3)), not(loc(B, 1, 4)), not(loc(B, 2, 1)), not(loc(B, 2, 2)), not(loc(B, 2, 3)), not(loc(B, 2, 4)), not(loc(B, 3, 1)), not(loc(B, 3, 2)), not(loc(B, 3, 3)), not(loc(B, 3, 4)), not(loc(B, 4, 1)), not(loc(B, 4, 2)), not(loc(B, 4, 3)).
+
+
+evidence(not(double_stacked_constraint)).
+evidence(not(two_places_constraint)).
+evidence(not(boat_in_unoccupies_constraint)).
+evidence(not(loc_not_occupies_constraint)).
+evidence(not(occupies_not_far_constraint)).
+evidence(not(located_nowhere_constraint)).

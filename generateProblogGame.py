@@ -44,13 +44,21 @@ def generate_problog_script(board_size, boats):
         outfile.write("two_places_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), not(Row1 = Row2), not(Col1 = Col2), loc(B, Row1, Col1), loc(B, Row2, Col2).\n")
         outfile.write("boat_in_unoccupies_constraint :- boat(B), row_col_range(Row, Col), not(boat_in(Row,Col)), occupies(B, Row, Col).\n")
         outfile.write("loc_not_occupies_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), not(occupies(B, Row1, Col1)), loc(B, Row2, Col2), pos_in_range(B, Row1, Col1, Row2, Col2).\n")
-        outfile.write("occupies_not_far_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), occupies(B, Row1, Col1), loc(B, Row2, Col2), not(pos_in_range(B, Row1, Col1, Row2, Col2)).\n\n\n")
+        outfile.write("occupies_not_far_constraint :- boat(B), row_col_range(Row1, Col1), row_col_range(Row2, Col2), occupies(B, Row1, Col1), loc(B, Row2, Col2), not(pos_in_range(B, Row1, Col1, Row2, Col2)).\n")
+        outfile.write("located_nowhere_constraint :- boat(B)")
+        for i in range(1, board_size+1):
+            for j in range(1, board_size+1):
+                if i == board_size and j == board_size:
+                    continue
+                outfile.write(", not(loc(B, %d, %d))" % (i,j))
+        outfile.write(".\n\n\n")
 
         outfile.write("evidence(not(double_stacked_constraint)).\n")
         outfile.write("evidence(not(two_places_constraint)).\n")
         outfile.write("evidence(not(boat_in_unoccupies_constraint)).\n")
         outfile.write("evidence(not(loc_not_occupies_constraint)).\n")
-        outfile.write("evidence(not(occupies_not_far_constraint)).")
+        outfile.write("evidence(not(occupies_not_far_constraint)).\n")
+        outfile.write("evidence(not(located_nowhere_constraint)).")
 
 
 
