@@ -1,5 +1,7 @@
 import sys
 import operator
+import time
+import numpy as np
 from problog import get_evaluatable
 from problog.program import PrologString
 import board as b
@@ -21,6 +23,7 @@ class game(object):
         self.unshot_positions = set((i, j) for i in range(1, board_size+1) for j in range(1, board_size+1))
         self.hits = set()
         self.misses = set()
+        self.num_sinks = 0
 
     def print_game(self):
         sys.stdout.write('   ')
@@ -34,9 +37,9 @@ class game(object):
             if i < 10:
                 sys.stdout.write(' ')
             for j in range(self.board_size):
-                if (i, j) in self.hits:
+                if (i+1, j+1) in self.hits:
                     sys.stdout.write('X')
-                elif (i, j) in self.misses:
+                elif (i+1, j+1) in self.misses:
                     sys.stdout.write('O')
                 else:
                     sys.stdout.write('.')
@@ -46,10 +49,13 @@ class game(object):
 
     def play_full_game(self):
         moves = 0
-        while len(self.hits) < self.boats:
+        cur_time = time.time()
+        while len(self.hits) < sum(self.boats):
             self.move()
             self.print_game()
             moves += 1
+            print "Made move in %.2fs" % (time.time()-cur_time)
+            cur_time = time.time()
         print "Won the game in %d moves" % moves
 
 
@@ -75,6 +81,56 @@ class game(object):
         self.knowledge += '\nevidence(not(boat_in%s)).\n' % str(pos)
 
 
+    def potential_sinks(self, pos, size):
+        """Determine the potential places a boat could have been when you sink it.
+
+        Update game knowledge to reflect these possibilities.
+
+        Args:
+            pos: The position of the hit that caused a sink.
+            size: The size of the boat that was sunk.
+        """
+        up_potentials = np.arange(size)
+        row = pos[0]
+        col = pos[1]
+        lower = 0
+        upper = size
+        for i in range(row + 1, row + size):
+            if i > self.board_size or (i, col) not in self.hits:
+                lower = size - i + row
+                break
+        for i in range(row - 1, row - size, -1):
+            if i < 1 or (i, col) not in self.hits:
+                upper = row - i
+                break
+        up_potentials = up_potentials[lower:upper]
+        lower = 0
+        upper = size
+        left_potentials = np.arange(size)
+        for j in range(col + 1, col + size):
+            if j > self.board_size or (row, j) not in self.hits:
+                lower = size - j + col
+                break
+        for j in range(col - 1, col - size, -1):
+            if j < 1 or (row, j) not in self.hits:
+                upper = col - j
+                break
+        left_potentials = left_potentials[lower:upper]
+        rule = 'sunk_%d' % self.num_sinks
+        self.num_sinks += 1
+        print "UP POTENTIALS"
+        print up_potentials
+        print "left POTENTIALS"
+        print left_potentials
+
+        for i in up_potentials:
+            self.knowledge += '\n%s :- boat(B), vertical(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, (row-i), col)
+        for j in left_potentials:
+            self.knowledge += '\n%s :- boat(B), horizontal(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, row, (col-j))
+        self.knowledge += '\nevidence(%s).\n' % rule
+
+
+
     def move(self):
         """Determine the optimal move and make it.
 
@@ -94,20 +150,21 @@ class game(object):
         best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
         print "Shooting at: %s" % str(best_position)
 
-        #THIS MIGHT BE A LITTLE SKETCHY BUT I THINK NOT
-        #IF A POSITION EVER HAS 0 PROBABILITY IT SHOULD NEVER HAVE POSITIVE PROBABILITY IN THE FUTURE
-        #STILL MIGHT BE A BIT UNNECESSARY
         for pos in result:
             if not(result[pos]):
                 position = extract_position(str(pos))
                 self.boat_not_in(position)
-                print "no boat in %s" % str(position)
+                print "Inferred no boat in %s" % str(position)
 
-        hit, sunk = self.board.shoot(best_position)
+        hit, sunk = self.board.shoot((best_position[0]-1, best_position[1]-1))
 
         #ADD LOGIC IN THE PRESENCE OF A SINK
         if hit:
             self.boat_in(best_position)
+            if sunk:
+                self.potential_sinks(best_position, sunk)
+                print "SUNK A BOAT WITH SIZE %d" % sunk
+                print self.knowledge
             return True, sunk
 
         else:

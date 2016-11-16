@@ -19,7 +19,7 @@ class board(object):
         self.dim = dim
 
         """Empty spots are marked with a period, occupied and unguessed
-        are marked with a O, occupied and guessed is marked with an X.
+        are marked with a B, occupied and guessed is marked with an X.
         """
         self.board = [['.' for i in range(dim)] for i in range(dim)]
         self.boat_index2positions = defaultdict(list)
@@ -72,14 +72,14 @@ class board(object):
         """
         if horizontal:
             for j in range(col, col + size):
-                self.board[row][j] = 'O'
+                self.board[row][j] = 'B'
                 position = (row, j)
                 self.boat_index2positions[boat_index].append(position)
                 self.position2boat_index[position] = boat_index
 
         else:
             for i in range(row, row + size):
-                self.board[i][col] = 'O'
+                self.board[i][col] = 'B'
                 position = (i, col)
                 self.boat_index2positions[boat_index].append(position)
                 self.position2boat_index[position] = boat_index
