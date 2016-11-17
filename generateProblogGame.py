@@ -72,7 +72,7 @@ def generate_problog_script(board_size, boats):
     script_name = "game_%d" % board_size
     for size in boats:
         script_name = "%s_%d" % (script_name, size)
-    script_name = "%s.txt" % script_name
+    script_name = "problog_scripts/%s.txt" % script_name
     with open(script_name, 'w') as outfile:
         outfile.write(generate_problog_string(board_size, boats))
 
