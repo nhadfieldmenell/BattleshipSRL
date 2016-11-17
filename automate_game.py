@@ -1,6 +1,7 @@
 import sys
 import operator
 import time
+import pdb
 import numpy as np
 from problog import get_evaluatable
 from problog.program import PrologString
@@ -17,13 +18,14 @@ class game(object):
     """
     def __init__(self, board_size, boats):
         self.board_size = board_size
-        self.boats = boats
+        self.boats = boats[:]
         self.board = b.board(board_size, boats)
         self.knowledge = gpg.generate_problog_string(board_size, boats)
         self.unshot_positions = set((i, j) for i in range(1, board_size+1) for j in range(1, board_size+1))
         self.hits = set()
         self.misses = set()
         self.num_sinks = 0
+        self.num_no_sink = 0
 
     def print_game(self):
         sys.stdout.write('   ')
@@ -50,7 +52,7 @@ class game(object):
     def play_full_game(self):
         moves = 0
         cur_time = time.time()
-        while len(self.hits) < sum(self.boats):
+        while self.boats:
             self.move()
             self.print_game()
             moves += 1
@@ -118,17 +120,56 @@ class game(object):
         left_potentials = left_potentials[lower:upper]
         rule = 'sunk_%d' % self.num_sinks
         self.num_sinks += 1
-        print "UP POTENTIALS"
-        print up_potentials
-        print "left POTENTIALS"
-        print left_potentials
 
+        new_knowledge = []
         for i in up_potentials:
-            self.knowledge += '\n%s :- boat(B), vertical(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, (row-i), col)
+            new_knowledge.append('\n%s :- boat(B), vertical(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, (row-i), col))
         for j in left_potentials:
-            self.knowledge += '\n%s :- boat(B), horizontal(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, row, (col-j))
-        self.knowledge += '\nevidence(%s).\n' % rule
+            new_knowledge.append('\n%s :- boat(B), horizontal(B), size(B, %d), loc(B, %d, %d).\n' % (rule, size, row, (col-j)))
+        new_knowledge.append('\nevidence(%s).\n' % rule)
+        self.knowledge += ''.join(new_knowledge)
+        print ''.join(new_knowledge)
 
+
+    def hit_no_sink(self, pos):
+        """Add knowldege when we have a hit but there is no sink.
+
+        Args:
+            pos: The position that we just hit.
+        """
+        #THIS SHIT AINT WORKIN YO!
+        row = pos[0]
+        col = pos[1]
+        #pdb.set_trace()
+        for size in set(self.boats):
+            for loc in range(row, row - size, -1):
+                if loc < 1:
+                    break
+                impossible_position = True
+                for i in range(loc, loc + size):
+                    if (i, col) not in self.hits:
+                        impossible_position = False
+                        break
+                if impossible_position:
+                    new_knowledge = ['\nno_sink_%d :- boat(B), size(B, %d), vertical(B), loc(B, %d, %d).\n' % (self.num_no_sink, size, loc, col)]
+                    new_knowledge.append('evidence(not(no_sink_%d)).\n' % self.num_no_sink)
+                    print ''.join(new_knowledge)
+                    self.knowledge += ''.join(new_knowledge)
+                    self.num_no_sink += 1
+            for loc in range(col, col - size, -1):
+                if loc < 1:
+                    break
+                impossible_position = True
+                for j in range(loc, loc + size):
+                    if (row, j) not in self.hits:
+                        impossible_position = False
+                        break
+                if impossible_position:
+                    new_knowledge = ['\nno_sink_%d :- boat(B), size(B, %d), horizontal(B), loc(B, %d, %d).\n' % (self.num_no_sink, size, row, loc)]
+                    new_knowledge.append('evidence(not(no_sink_%d)).\n' % self.num_no_sink)
+                    self.knowledge += ''.join(new_knowledge) 
+                    print ''.join(new_knowledge)
+                    self.num_no_sink += 1
 
 
     def move(self):
@@ -146,25 +187,31 @@ class game(object):
         query = self.knowledge[:]
         query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
         result = get_evaluatable().create_from(PrologString(query)).evaluate()
-
-        best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
-        print "Shooting at: %s" % str(best_position)
-
         for pos in result:
             if not(result[pos]):
                 position = extract_position(str(pos))
                 self.boat_not_in(position)
                 print "Inferred no boat in %s" % str(position)
 
-        hit, sunk = self.board.shoot((best_position[0]-1, best_position[1]-1))
+        best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+        print "Shooting at: %s" % str(best_position)
 
-        #ADD LOGIC IN THE PRESENCE OF A SINK
+        hit, sunk = self.board.shoot((best_position[0]-1, best_position[1]-1))
+        if hit:
+            print "HIT"
+        else:
+            print "MISS"
+
+        #ADD LOGIC IN THE PRESENCE OF A NON-SINK
         if hit:
             self.boat_in(best_position)
             if sunk:
-                self.potential_sinks(best_position, sunk)
                 print "SUNK A BOAT WITH SIZE %d" % sunk
-                print self.knowledge
+                self.potential_sinks(best_position, sunk)
+                # CHECK THIS
+                self.boats.pop(self.boats.index(sunk))
+            else:
+                self.hit_no_sink(best_position)
             return True, sunk
 
         else:

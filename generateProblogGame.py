@@ -56,7 +56,7 @@ def generate_problog_string(board_size, boats):
     contents.append("evidence(not(boat_in_unoccupies_constraint)).\n")
     contents.append("evidence(not(loc_not_occupies_constraint)).\n")
     contents.append("evidence(not(occupies_not_far_constraint)).\n")
-    contents.append("evidence(not(located_nowhere_constraint)).")
+    contents.append("evidence(not(located_nowhere_constraint)).\n\n")
     return ''.join(contents)
 
 
