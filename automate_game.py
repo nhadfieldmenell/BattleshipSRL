@@ -6,6 +6,8 @@ import numpy as np
 from problog import get_evaluatable
 from problog.program import PrologString
 import board as b
+import random
+import time
 import generateProblogGame as gpg
 
 
@@ -13,10 +15,12 @@ class game(object):
     """A game instance.
 
     Args:
+        move_type: A string indicating the move algorithm to be used.
         board_size: An int for the edge length of the board.
         boats: A list of ints corresponding to the boat sizes for the game.
     """
-    def __init__(self, board_size, boats):
+    def __init__(self, move_type, board_size, boats):
+        self.move_type = move_type
         self.board_size = board_size
         self.boats = boats[:]
         self.board = b.board(board_size, boats)
@@ -26,6 +30,8 @@ class game(object):
         self.misses = set()
         self.num_sinks = 0
         self.num_no_sink = 0
+        self.targets = []
+        self.last_hit = (0, 0) #dummy initialization value
 
     def print_game(self):
         sys.stdout.write('   ')
@@ -60,6 +66,17 @@ class game(object):
             cur_time = time.time()
         print "Won the game in %d moves" % moves
 
+    def adjacent_positions(self, pos):
+        north_pos = (pos[0]-1, pos[1])
+        east_pos = (pos[0], pos[1]+1)
+        south_pos = (pos[0]+1, pos[1])
+        west_pos = (pos[0], pos[1]-1)
+
+        possible_targets = [north_pos, south_pos, east_pos, west_pos]
+
+        for el in possible_targets:
+            if el in self.unshot_positions and el not in self.targets:
+                self.targets.append(el)
 
     def boat_in(self, pos):
         """Update game when we know there is a boat in a specific position.
@@ -132,7 +149,7 @@ class game(object):
 
 
     def hit_no_sink(self, pos):
-        """Add knowldege when we have a hit but there is no sink.
+        """Add knowledge when we have a hit but there is no sink.
 
         Args:
             pos: The position that we just hit.
@@ -175,8 +192,26 @@ class game(object):
     def move(self):
         """Determine the optimal move and make it.
 
+        PROBLOG MODE:
+
         Determine the unguessed position with the highest probability of holding a boat.
         Shoot in that position and update knowledge accordingly.
+
+        RANDOM MODE:
+
+        Randomly select a position on the board from those that have not been shot at yet.
+
+        HUNT AND TARGET MODE:
+
+        First, randomly select a position on the board from those that have not been shot at yet.
+        If hit, all positions directly adjacent in all cardinal directions are added to target list.
+        If miss, continue shooting randomly until hit.
+        Target list takes priority for future shots; return to random mode when target list is empty.
+
+        PDF MODE:
+
+        Create a PDF representation of the likelihood of where the boats can be, given present board state.
+        Fire at location with most possible arrangements of a boat.
 
         Returns:
             A tuple (x, y):
@@ -184,20 +219,39 @@ class game(object):
                 y: 0 if the shot did not sink a ship. The size of the
                     ship if the shot did sink a ship.
         """
-        query = self.knowledge[:]
-        query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
-        result = get_evaluatable().create_from(PrologString(query)).evaluate()
-        for pos in result:
-            if not(result[pos]):
-                position = extract_position(str(pos))
-                self.boat_not_in(position)
-                print "Inferred no boat in %s" % str(position)
+        if self.move_type == "PROBLOG":
+            query = self.knowledge[:]
+            query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
+            result = get_evaluatable().create_from(PrologString(query)).evaluate()
+            for pos in result:
+                if not(result[pos]):
+                    position = extract_position(str(pos))
+                    self.boat_not_in(position)
+                    print "Inferred no boat in %s" % str(position)
 
-        best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+            best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+
+        elif self.move_type == "RANDOM":
+            best_position = random.sample(self.unshot_positions, 1)[0]
+
+        elif self.move_type == "HT":
+            self.adjacent_positions(self.last_hit)
+
+            if len(self.targets): #TARGET MODE
+                best_position = self.targets[0]
+                self.targets.remove(best_position)
+
+            else: #RANDOM MODE
+                best_position = random.sample(self.unshot_positions, 1)[0]
+
+        else: #PDF type
+            print "TODO"
+
         print "Shooting at: %s" % str(best_position)
 
         hit, sunk = self.board.shoot((best_position[0]-1, best_position[1]-1))
         if hit:
+            self.last_hit = best_position
             print "HIT"
         else:
             print "MISS"
@@ -262,14 +316,21 @@ def practice_query(board_size, boats):
     print result.keys()[0]
 
 def main():
-    if len(sys.argv) < 3:
-        print "USAGE: [BOARD_SIZE] [BOAT_SIZE1] [BOAT_SIZE2] ..."
+    valid_move_types = ["PROBLOG", "RANDOM", "HT", "PDF"]
+
+    if len(sys.argv) < 4:
+        print "USAGE: [MOVE_TYPE] [BOARD_SIZE] [BOAT_SIZE1] [BOAT_SIZE2] ..."
         exit(1)
 
-    board_size = int(sys.argv[1])
-    boats = map(int, sys.argv[2:])
+    if sys.argv[1] not in valid_move_types:
+        print "EXPECTED [MOVE_TYPE]: 'PROBLOG', 'RANDOM', 'HT', 'PDF'"
+        exit(1)
 
-    g = game(board_size, boats)
+    move_type = sys.argv[1]
+    board_size = int(sys.argv[2])
+    boats = map(int, sys.argv[3:])
+
+    g = game(move_type, board_size, boats)
 
     g.board.print_board()
 
