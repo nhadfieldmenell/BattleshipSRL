@@ -26,8 +26,8 @@
       <file leaf-file-name="automate_game.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/automate_game.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="2.1063464">
-              <caret line="299" column="0" selection-start-line="299" selection-start-column="0" selection-end-line="299" selection-end-column="0" />
+            <state vertical-scroll-proportion="3.445969">
+              <caret line="137" column="54" selection-start-line="137" selection-start-column="54" selection-end-line="137" selection-end-column="54" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -372,7 +372,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/battleship_problog_test.txt">
+    <entry file="file://$PROJECT_DIR$/problog_test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -380,7 +380,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/problog_test.py">
+    <entry file="file://$PROJECT_DIR$/battleship_problog_test.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
@@ -400,8 +400,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/automate_game.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.1063464">
-          <caret line="299" column="0" selection-start-line="299" selection-start-column="0" selection-end-line="299" selection-end-column="0" />
+        <state vertical-scroll-proportion="3.445969">
+          <caret line="137" column="54" selection-start-line="137" selection-start-column="54" selection-end-line="137" selection-end-column="54" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>

@@ -2,6 +2,7 @@ import sys
 import operator
 import time
 import pdb
+import numpypy
 import numpy as np
 from problog import get_evaluatable
 from problog.program import PrologString
