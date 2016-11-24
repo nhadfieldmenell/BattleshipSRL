@@ -2,6 +2,7 @@ from automate_game import game
 import sys
 import time
 import os
+import gc
 
 
 def main():
@@ -42,12 +43,14 @@ def main():
     # individual run data files
 
     for i in range(number_of_runs):
+
+        iteration_start = time.time()
+        g = game(move_type, board_size, boats)
+        g.board.print_board()
+        current_num_moves = g.play_full_game()
+        num_moves += current_num_moves
+
         with open("run" + str(i) + ".data", "wb") as data_file:
-            iteration_start = time.time()
-            g = game(move_type, board_size, boats)
-            g.board.print_board()
-            current_num_moves = g.play_full_game()
-            num_moves += current_num_moves
             data_file.write("Number of moves: " + str(current_num_moves) + "\nTime taken: " + str(time.time()-iteration_start))
 
     total_time = time.time() - start_time
