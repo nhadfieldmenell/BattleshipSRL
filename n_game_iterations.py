@@ -52,6 +52,8 @@ def main():
 
         with open("run" + str(i) + ".data", "wb") as data_file:
             data_file.write("Number of moves: " + str(current_num_moves) + "\nTime taken: " + str(time.time()-iteration_start))
+        if move_type == "PROBLOG":
+            gc.collect()
 
     total_time = time.time() - start_time
     time_to_completion = "Overall time to completion: %.2f seconds" % total_time
