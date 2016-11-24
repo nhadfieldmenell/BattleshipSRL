@@ -12,7 +12,6 @@ from problog import get_evaluatable
 from problog.program import PrologString
 import board as b
 import random
-import time
 import generateProblogGame as gpg
 
 
@@ -70,6 +69,7 @@ class game(object):
             print "Made move in %.2fs" % (time.time()-cur_time)
             cur_time = time.time()
         print "Won the game in %d moves" % moves
+        return moves
 
     def adjacent_positions(self, pos):
         north_pos = (pos[0]-1, pos[1])
@@ -336,12 +336,10 @@ def main():
     boats = map(int, sys.argv[3:])
 
     g = game(move_type, board_size, boats)
-
     g.board.print_board()
-
     g.play_full_game()
-    #g.move()
 
+    #g.move()
 
 
 if __name__ == '__main__':
