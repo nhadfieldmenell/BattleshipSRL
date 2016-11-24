@@ -2,7 +2,11 @@ import sys
 import operator
 import time
 import pdb
-import numpypy
+#bypass numpy import error on deduction
+try:
+    import numpypy
+except ImportError:
+    pass
 import numpy as np
 from problog import get_evaluatable
 from problog.program import PrologString
