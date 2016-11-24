@@ -46,8 +46,9 @@ def main():
             iteration_start = time.time()
             g = game(move_type, board_size, boats)
             g.board.print_board()
-            num_moves += g.play_full_game()
-            data_file.write("Number of moves: " + str(num_moves) + "\nTime taken: " + str(time.time()-iteration_start))
+            current_num_moves = g.play_full_game()
+            num_moves += current_num_moves
+            data_file.write("Number of moves: " + str(current_num_moves) + "\nTime taken: " + str(time.time()-iteration_start))
 
     total_time = time.time() - start_time
     time_to_completion = "Overall time to completion: %.2f seconds" % total_time
