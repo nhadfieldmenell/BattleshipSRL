@@ -1,4 +1,5 @@
 import sys
+import os
 import operator
 import time
 import pdb
@@ -59,8 +60,8 @@ class game(object):
                 sys.stdout.write('  ')
             print '\n'
 
-
-    def play_full_game(self):
+    def play_full_game(self, write_data=False, run_number=0):
+        start_time = time.time()
         cur_time = time.time()
         while self.boats:
             self.move()
@@ -69,6 +70,10 @@ class game(object):
             print "Made move in %.2fs" % (time.time()-cur_time)
             cur_time = time.time()
         print "Won the game in %d moves" % self.total_moves
+        if write_data:
+            with open("run" + str(run_number) + ".data", "wb") as data_file:
+                data_file.write('\n'.join(["Number of moves: %s" % str(self.total_moves), "Time taken: %s" %
+                                           str(time.time()-start_time)]))
         return self.total_moves
 
     def adjacent_positions(self, pos):

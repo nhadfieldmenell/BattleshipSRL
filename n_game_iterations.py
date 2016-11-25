@@ -24,9 +24,11 @@ def main():
 
     # setup folder for data collection
 
-    if not os.path.isdir("data"):
-        os.mkdir("data")
-    os.chdir("data")
+    data_folder = "data"
+
+    if not os.path.isdir(data_folder):
+        os.mkdir(data_folder)
+    os.chdir(data_folder)
 
     game_type = move_type + "_" + str(board_size) + "_" + "_".join(str(x) for x in boats)
 
@@ -39,28 +41,28 @@ def main():
     os.chdir(current_run_folder)
 
     start_time = time.time()
+
+    # individual runs
     num_moves = 0
-
-    # individual run data files
-
     for i in range(number_of_runs):
-    
-        iteration_start = time.time()
         g = game(move_type, board_size, boats)
         g.board.print_board()
-        p = mp.Process(target=g.play_full_game)
-        p.start()
-        p.join()
-        num_moves += g.total_moves
-
-        with open("run" + str(i) + ".data", "wb") as data_file:
-            data_file.write("Number of moves: " + str(g.total_moves) + "\nTime taken: " + str(time.time()-iteration_start))
+        if move_type == "PROBLOG":
+            p = mp.Process(target=g.play_full_game, args=(True, i))
+            p.start()
+            p.join()
+        else:
+            g.play_full_game(True, i)
+        with open("run" + str(i) + ".data", "r") as data_file:
+            current_moves = data_file.readline().strip().split(' ')[-1]
+            num_moves += int(current_moves)
 
     total_time = time.time() - start_time
     time_to_completion = "Overall time to completion: %.2f seconds" % total_time
     average_time = total_time / number_of_runs
-    average_time_to_completion = "Average time taken: %.2f" % average_time
-    moves_taken = "Total moves taken: %.2f" % num_moves
+    average_time_to_completion = "Average time taken: %.2f seconds" % average_time
+
+    moves_taken = "Total moves taken: %d" % num_moves
     average_moves = float(num_moves) / number_of_runs
     average_moves_taken = "Average moves taken: %.2f" % average_moves
 
