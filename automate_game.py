@@ -36,6 +36,7 @@ class game(object):
         self.num_no_sink = 0
         self.targets = []
         self.last_hit = (0, 0) #dummy initialization value
+        self.total_moves = 0
 
     def print_game(self):
         sys.stdout.write('   ')
@@ -60,16 +61,15 @@ class game(object):
 
 
     def play_full_game(self):
-        moves = 0
         cur_time = time.time()
         while self.boats:
             self.move()
             self.print_game()
-            moves += 1
+            self.total_moves += 1
             print "Made move in %.2fs" % (time.time()-cur_time)
             cur_time = time.time()
-        print "Won the game in %d moves" % moves
-        return moves
+        print "Won the game in %d moves" % self.total_moves
+        return self.total_moves
 
     def adjacent_positions(self, pos):
         north_pos = (pos[0]-1, pos[1])

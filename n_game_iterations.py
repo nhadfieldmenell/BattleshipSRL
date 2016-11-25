@@ -3,6 +3,7 @@ import sys
 import time
 import os
 import gc
+import multiprocessing as mp
 
 
 def main():
@@ -43,17 +44,17 @@ def main():
     # individual run data files
 
     for i in range(number_of_runs):
-
+    
         iteration_start = time.time()
         g = game(move_type, board_size, boats)
         g.board.print_board()
-        current_num_moves = g.play_full_game()
-        num_moves += current_num_moves
+        p = mp.Process(target=g.play_full_game)
+        p.start()
+        p.join()
+        num_moves += g.total_moves
 
         with open("run" + str(i) + ".data", "wb") as data_file:
-            data_file.write("Number of moves: " + str(current_num_moves) + "\nTime taken: " + str(time.time()-iteration_start))
-        if move_type == "PROBLOG":
-            gc.collect()
+            data_file.write("Number of moves: " + str(g.total_moves) + "\nTime taken: " + str(time.time()-iteration_start))
 
     total_time = time.time() - start_time
     time_to_completion = "Overall time to completion: %.2f seconds" % total_time
