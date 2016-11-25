@@ -70,10 +70,11 @@ class game(object):
             print "Made move in %.2fs" % (time.time()-cur_time)
             cur_time = time.time()
         print "Won the game in %d moves" % self.total_moves
+        overall_time = time.time() - start_time
         if write_data:
             with open("run" + str(run_number) + ".data", "wb") as data_file:
-                data_file.write('\n'.join(["Number of moves: %s" % str(self.total_moves), "Time taken: %s" %
-                                           str(time.time()-start_time)]))
+                data_file.write('\n'.join(["Number of moves: %s" % str(self.total_moves), "Time taken: %f seconds" %
+                                           overall_time]))
         return self.total_moves
 
     def adjacent_positions(self, pos):
