@@ -213,9 +213,10 @@ class game(object):
         best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
         print str(best_position)
         print str(not_in_list)
-
-        pickle.dump(not_in_list, open("not_in.data", "wb"))
-        pickle.dump(best_position, open("bp.data", "wb"))
+        with open("not_in.data", "wb") as ni:
+            pickle.dump(not_in_list, ni)
+        with open("bp.data", "wb") as bp:
+            pickle.dump(best_position, bp)
 
     def move(self):
         """Determine the optimal move and make it.
