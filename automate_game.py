@@ -1,7 +1,8 @@
 import sys
-import os
 import operator
 import time
+import multiprocessing as mp
+import pickle
 import pdb
 #bypass numpy import error on deduction
 try:
@@ -199,6 +200,19 @@ class game(object):
                     print ''.join(new_knowledge)
                     self.num_no_sink += 1
 
+    def problog_move(self):
+        query = self.knowledge[:]
+        query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
+        result = get_evaluatable().create_from(PrologString(query)).evaluate()
+        not_in_list = []
+        for pos in result:
+            if not(result[pos]):
+                position = extract_position(str(pos))
+                print "Inferred no boat in %s" % str(position)
+                not_in_list.append(position)
+        best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+        pickle.dump(not_in_list, open("not_in.data", "wb"))
+        pickle.dump(best_position, open("bp.data", "wb"))
 
     def move(self):
         """Determine the optimal move and make it.
@@ -231,16 +245,13 @@ class game(object):
                     ship if the shot did sink a ship.
         """
         if self.move_type == "PROBLOG":
-            query = self.knowledge[:]
-            query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
-            result = get_evaluatable().create_from(PrologString(query)).evaluate()
-            for pos in result:
-                if not(result[pos]):
-                    position = extract_position(str(pos))
-                    self.boat_not_in(position)
-                    print "Inferred no boat in %s" % str(position)
-
-            best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+            p = mp.Process(target=self.problog_move)
+            p.start()
+            p.join()
+            not_in_boats = pickle.load(open("not_in.data", "rb"))
+            for position in not_in_boats:
+                self.boat_not_in(position)
+            best_position = pickle.load(open("bp.data", "rb"))
 
         elif self.move_type == "RANDOM":
             best_position = random.sample(self.unshot_positions, 1)[0]
