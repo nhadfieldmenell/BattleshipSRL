@@ -211,6 +211,9 @@ class game(object):
                 print "Inferred no boat in %s" % str(position)
                 not_in_list.append(position)
         best_position = extract_position(str(max(result.iteritems(), key=operator.itemgetter(1))[0]))
+        print str(best_position)
+        print str(not_in_list)
+
         pickle.dump(not_in_list, open("not_in.data", "wb"))
         pickle.dump(best_position, open("bp.data", "wb"))
 
