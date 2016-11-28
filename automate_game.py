@@ -3,6 +3,7 @@ import operator
 import time
 import multiprocessing as mp
 import pickle
+from copy import deepcopy
 import pdb
 #bypass numpy import error on deduction
 try:
@@ -34,10 +35,14 @@ class game(object):
         self.unshot_positions = set((i, j) for i in range(1, board_size+1) for j in range(1, board_size+1))
         self.hits = set()
         self.misses = set()
+        self.current_hits = set()
         self.num_sinks = 0
         self.num_no_sink = 0
         self.targets = []
-        self.last_hit = (0, 0) #dummy initialization value
+        self.last_hit_position = (0, 0) #dummy initialization value
+        self.in_hunt_mode = True #for pdf mode
+        self.original_boat_index2positions = deepcopy(self.board.boat_index2positions)
+        self.original_position2boat_index = deepcopy(self.board.position2boat_index)
         self.total_moves = 0
 
     def print_game(self):
@@ -85,10 +90,7 @@ class game(object):
         west_pos = (pos[0], pos[1]-1)
 
         possible_targets = [north_pos, south_pos, east_pos, west_pos]
-
-        for el in possible_targets:
-            if el in self.unshot_positions and el not in self.targets:
-                self.targets.append(el)
+        return possible_targets
 
     def boat_in(self, pos):
         """Update game when we know there is a boat in a specific position.
@@ -232,22 +234,62 @@ class game(object):
 
     def location_score_matrix(self, boat_size):
         score_matrix = [[0 for x in range(self.board_size)] for y in range(self.board_size)]
-        #check horizontal position
+        print self.current_hits
         for i in range(1, self.board_size+1):
             for j in range(1, self.board_size+1):
                 cur_boat_spaces_h = self.hypothetical_spaces_used(boat_size, 1, (i, j))
                 cur_boat_spaces_v = self.hypothetical_spaces_used(boat_size, 0, (i, j))
-                valid_positions = list(self.unshot_positions) + list(self.hits)
-                if cur_boat_spaces_h == [space for space in cur_boat_spaces_h if space in valid_positions]:
-                    for position_h in cur_boat_spaces_h:
-                        score_matrix[position_h[0]-1][position_h[1]-1] += 1
-                if cur_boat_spaces_v == [space for space in cur_boat_spaces_v if space in valid_positions]:
-                    for position_v in cur_boat_spaces_v:
-                        score_matrix[position_v[0]-1][position_v[1]-1] += 1
+
+                if self.in_hunt_mode:
+                    valid_positions = list(self.unshot_positions)
+
+                    h_overlap = [space for space in cur_boat_spaces_h if space in valid_positions]
+                    v_overlap = [space for space in cur_boat_spaces_v if space in valid_positions]
+
+                    if cur_boat_spaces_h == h_overlap: #check if all positions valid
+                        for position_h in cur_boat_spaces_h:
+                            score_matrix[position_h[0]-1][position_h[1]-1] += 1
+                    if cur_boat_spaces_v == v_overlap:
+                        for position_v in cur_boat_spaces_v:
+                            score_matrix[position_v[0]-1][position_v[1]-1] += 1
+
+                else: #target mode
+
+                    valid_positions = list(self.unshot_positions) + list(self.current_hits)
+
+                    h_overlap = [space for space in cur_boat_spaces_h if space in valid_positions]
+                    v_overlap = [space for space in cur_boat_spaces_v if space in valid_positions]
+
+                    if cur_boat_spaces_h == h_overlap:
+                        hit_overlap = [space for space in cur_boat_spaces_h if space in self.current_hits]
+                        for position_h in cur_boat_spaces_h:
+                            if hit_overlap:
+                                score_matrix[position_h[0]-1][position_h[1]-1] += 100
+                            else:
+                                score_matrix[position_h[0]-1][position_h[1]-1] += 1
+                    if cur_boat_spaces_v == v_overlap:
+                        hit_overlap = [space for space in cur_boat_spaces_v if space in self.current_hits]
+                        for position_v in cur_boat_spaces_v:
+                            if hit_overlap:
+                                score_matrix[position_v[0]-1][position_v[1]-1] += 100
+                            else:
+                                score_matrix[position_v[0]-1][position_v[1]-1] += 1
+        #print score_matrix
         return score_matrix
 
+    def sum_m_dist_from_hits(self, pos):
+        sum_value = 0
+        for el in self.hits:
+            dist = abs(pos[0] - el[0]) + abs(pos[1] - el[1])
+            sum_value += dist
 
+        return sum_value
 
+    def remove_hits_from_set(self, pos):
+        boat_index = self.original_position2boat_index[(pos[0]-1, pos[1]-1)]
+        boat_positions = self.original_boat_index2positions[boat_index]
+        for el in boat_positions:
+            self.current_hits.remove((el[0]+1, el[1]+1))
 
     def move(self):
         """Determine the optimal move and make it.
@@ -292,7 +334,11 @@ class game(object):
             best_position = random.sample(self.unshot_positions, 1)[0]
 
         elif self.move_type == "HT":
-            self.adjacent_positions(self.last_hit)
+            possible_targets = self.adjacent_positions(self.last_hit_position)
+
+            for el in possible_targets:
+                if el in self.unshot_positions and el not in self.targets:
+                    self.targets.append(el)
 
             if len(self.targets): #TARGET MODE
                 best_position = self.targets[0]
@@ -302,6 +348,7 @@ class game(object):
                 best_position = random.sample(self.unshot_positions, 1)[0]
 
         else: #PDF type
+            #print self.in_hunt_mode
             prob_sum = [[0 for x in range(self.board_size)] for y in range(self.board_size)]
             for boat in self.boats:
                 score_matrix = self.location_score_matrix(boat)
@@ -312,28 +359,36 @@ class game(object):
 
             flatten_prob_sum = [el for row in prob_sum for el in row]
             best_position_value = max(flatten_prob_sum)
-            print best_position_value
+            #print best_position_value
             best_position_indices = [(index, row.index(best_position_value)) for index, row in enumerate(prob_sum)
                                      if best_position_value in row] #stackoverflow: getting 2d indices
-            print best_position_indices
+            '''print best_position_indices
             for el in prob_sum:
-                print el
-            best_position_index = best_position_indices[0]
+                print el'''
+            best_position_index = random.choice(best_position_indices)
             best_position = (best_position_index[0]+1, best_position_index[1]+1)
+
 
         print "Shooting at: %s" % str(best_position)
 
         hit, sunk = self.board.shoot((best_position[0]-1, best_position[1]-1))
         if hit:
-            self.last_hit = best_position
+            self.last_hit_position = best_position
             print "HIT"
         else:
-            print "MISS"
+             print "MISS"
 
         #ADD LOGIC IN THE PRESENCE OF A NON-SINK
         if hit:
+            self.in_hunt_mode = False
+            self.current_hits.add(best_position)
             self.boat_in(best_position)
             if sunk:
+                if len(self.current_hits) == sunk:
+                    self.in_hunt_mode = True
+                    self.current_hits = set()
+                else:
+                    self.remove_hits_from_set(best_position)
                 print "SUNK A BOAT WITH SIZE %d" % sunk
                 self.potential_sinks(best_position, sunk)
                 # CHECK THIS
