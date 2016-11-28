@@ -218,6 +218,37 @@ class game(object):
         with open("bp.data", "wb") as bp:
             pickle.dump(best_position, bp)
 
+    def hypothetical_spaces_used(self, boat_size, horizontal, first_space):
+        spaces = []
+        if horizontal:
+            for y in range(first_space[1], first_space[1] + boat_size):
+                space_to_add = (first_space[0], y)
+                spaces.append(space_to_add)
+        else: # vertical
+            for x in range(first_space[0], first_space[0] + boat_size):
+                space_to_add = (x, first_space[1])
+                spaces.append(space_to_add)
+        return spaces
+
+    def location_score_matrix(self, boat_size):
+        score_matrix = [[0 for x in range(self.board_size)] for y in range(self.board_size)]
+        #check horizontal position
+        for i in range(1, self.board_size+1):
+            for j in range(1, self.board_size+1):
+                cur_boat_spaces_h = self.hypothetical_spaces_used(boat_size, 1, (i, j))
+                cur_boat_spaces_v = self.hypothetical_spaces_used(boat_size, 0, (i, j))
+                valid_positions = list(self.unshot_positions) + list(self.hits)
+                if cur_boat_spaces_h == [space for space in cur_boat_spaces_h if space in valid_positions]:
+                    for position_h in cur_boat_spaces_h:
+                        score_matrix[position_h[0]-1][position_h[1]-1] += 1
+                if cur_boat_spaces_v == [space for space in cur_boat_spaces_v if space in valid_positions]:
+                    for position_v in cur_boat_spaces_v:
+                        score_matrix[position_v[0]-1][position_v[1]-1] += 1
+        return score_matrix
+
+
+
+
     def move(self):
         """Determine the optimal move and make it.
 
@@ -271,7 +302,24 @@ class game(object):
                 best_position = random.sample(self.unshot_positions, 1)[0]
 
         else: #PDF type
-            print "TODO"
+            prob_sum = [[0 for x in range(self.board_size)] for y in range(self.board_size)]
+            for boat in self.boats:
+                score_matrix = self.location_score_matrix(boat)
+                for i in range(len(score_matrix)):
+                    for j in range(len(score_matrix)):
+                        if (i+1, j+1) in self.unshot_positions:
+                            prob_sum[i][j] += score_matrix[i][j]
+
+            flatten_prob_sum = [el for row in prob_sum for el in row]
+            best_position_value = max(flatten_prob_sum)
+            print best_position_value
+            best_position_indices = [(index, row.index(best_position_value)) for index, row in enumerate(prob_sum)
+                                     if best_position_value in row] #stackoverflow: getting 2d indices
+            print best_position_indices
+            for el in prob_sum:
+                print el
+            best_position_index = best_position_indices[0]
+            best_position = (best_position_index[0]+1, best_position_index[1]+1)
 
         print "Shooting at: %s" % str(best_position)
 
