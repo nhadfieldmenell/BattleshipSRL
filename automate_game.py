@@ -43,6 +43,7 @@ class game(object):
         self.in_hunt_mode = True #for pdf mode
         self.original_boat_index2positions = deepcopy(self.board.boat_index2positions)
         self.original_position2boat_index = deepcopy(self.board.position2boat_index)
+        self.sunk_ambiguous_boats = []
         self.total_moves = 0
 
     def print_game(self):
@@ -285,11 +286,35 @@ class game(object):
 
         return sum_value
 
-    def remove_hits_from_set(self, pos):
-        boat_index = self.original_position2boat_index[(pos[0]-1, pos[1]-1)]
-        boat_positions = self.original_boat_index2positions[boat_index]
-        for el in boat_positions:
-            self.current_hits.remove((el[0]+1, el[1]+1))
+    def remove_hits_from_set(self, pos, size):
+        self.sunk_ambiguous_boats.append(size)
+
+        if sum(self.sunk_ambiguous_boats) == len(self.current_hits):
+            self.current_hits = set()
+            self.sunk_ambiguous_boats = []
+            return
+
+        #check if this current case isn't ambiguous, remove if this is the case
+        possible_orientations = 0
+        possible_orientation_spaces = []
+        for i in range(pos[0] - size + 1, pos[0] + 1):
+            possible_spaces = [(i, pos[1]) for i in range(i, i + size)]
+            ch_overlap = [el for el in possible_spaces if el in list(self.current_hits)]
+            if possible_spaces == ch_overlap:
+                possible_orientations += 1
+                possible_orientation_spaces.append(possible_spaces)
+
+        for j in range(pos[1] - size + 1, pos[1] + 1):
+            possible_spaces = [(pos[0], j) for j in range(j, j + size)]
+            ch_overlap = [el for el in possible_spaces if el in list(self.current_hits)]
+            if possible_spaces == ch_overlap:
+                possible_orientations += 1
+                possible_orientation_spaces.append(possible_spaces)
+
+        if possible_orientations == 1:
+            for el in possible_orientation_spaces[0]:
+                self.current_hits.remove((el[0], el[1]))
+            self.sunk_ambiguous_boats.remove(size)
 
     def move(self):
         """Determine the optimal move and make it.
@@ -380,15 +405,15 @@ class game(object):
 
         #ADD LOGIC IN THE PRESENCE OF A NON-SINK
         if hit:
-            self.in_hunt_mode = False
+            if self.move_type == "PDF":
+                self.in_hunt_mode = False
             self.current_hits.add(best_position)
             self.boat_in(best_position)
             if sunk:
-                if len(self.current_hits) == sunk:
-                    self.in_hunt_mode = True
-                    self.current_hits = set()
-                else:
-                    self.remove_hits_from_set(best_position)
+                if self.move_type == "PDF":
+                    self.remove_hits_from_set(best_position, sunk)
+                    if not len(self.current_hits): #cleared all unknown hits
+                        self.in_hunt_mode = True
                 print "SUNK A BOAT WITH SIZE %d" % sunk
                 self.potential_sinks(best_position, sunk)
                 # CHECK THIS
