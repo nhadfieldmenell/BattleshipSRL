@@ -3,7 +3,6 @@ import operator
 import time
 import multiprocessing as mp
 import pickle
-from copy import deepcopy
 import pdb
 #bypass numpy import error on deduction
 try:
@@ -41,8 +40,6 @@ class game(object):
         self.targets = []
         self.last_hit_position = (0, 0) #dummy initialization value
         self.in_hunt_mode = True #for pdf mode
-        self.original_boat_index2positions = deepcopy(self.board.boat_index2positions)
-        self.original_position2boat_index = deepcopy(self.board.position2boat_index)
         self.sunk_ambiguous_boats = []
         self.total_moves = 0
 
@@ -85,6 +82,11 @@ class game(object):
         return self.total_moves
 
     def adjacent_positions(self, pos):
+        """Determines spaces in all four cardinal directions, regardless of validity of resulting positions.
+
+        Args:
+            pos: A tuple of ints corresponding to the position that is to be analyzed.
+        """
         north_pos = (pos[0]-1, pos[1])
         east_pos = (pos[0], pos[1]+1)
         south_pos = (pos[0]+1, pos[1])
@@ -204,6 +206,9 @@ class game(object):
                     self.num_no_sink += 1
 
     def problog_move(self):
+        """Performs a ProbLog-based query in order to determine the next position to shoot at.
+        """
+
         query = self.knowledge[:]
         query += '\n' + '\n'.join(map(lambda x: 'query(boat_in%s).' % str(x), self.unshot_positions))
         result = get_evaluatable().create_from(PrologString(query)).evaluate()
@@ -222,6 +227,12 @@ class game(object):
             pickle.dump(best_position, bp)
 
     def hypothetical_spaces_used(self, boat_size, horizontal, first_space):
+        """Determines the positions taken up by a boat, given its size, orientation, and first position.
+
+        Args:
+            boat_size: The size of the boat.
+            horizontal: Boolean where True indicates horizontal alignment, False indicates vertical alignment.
+        """
         spaces = []
         if horizontal:
             for y in range(first_space[1], first_space[1] + boat_size):
@@ -234,6 +245,12 @@ class game(object):
         return spaces
 
     def location_score_matrix(self, boat_size):
+        """Analyzes the state of the board and provides scores for each position based on likelihood of
+            a boat of a given size being there.
+
+        Args:
+            boat_size: The size of the boat.
+        """
         score_matrix = [[0 for x in range(self.board_size)] for y in range(self.board_size)]
         print self.current_hits
         for i in range(1, self.board_size+1):
@@ -278,15 +295,13 @@ class game(object):
         #print score_matrix
         return score_matrix
 
-    def sum_m_dist_from_hits(self, pos):
-        sum_value = 0
-        for el in self.hits:
-            dist = abs(pos[0] - el[0]) + abs(pos[1] - el[1])
-            sum_value += dist
-
-        return sum_value
-
     def remove_hits_from_set(self, pos, size):
+        """Works to alleviate ambiguity of hits against unknown boats with knowledge of recently sunk boats.
+            Used for PDF function.
+
+            Args: pos: The position that received an indication that a boat was sunk.
+                  size: The size of the boat that was just sunk.
+        """
         self.sunk_ambiguous_boats.append(size)
 
         if sum(self.sunk_ambiguous_boats) == len(self.current_hits):

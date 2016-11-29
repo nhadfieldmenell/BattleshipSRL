@@ -2,7 +2,6 @@ from automate_game import game
 import sys
 import time
 import os
-import gc
 import multiprocessing as mp
 
 
