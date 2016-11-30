@@ -284,14 +284,14 @@ class game(object):
                         hit_overlap = [space for space in cur_boat_spaces_h if space in self.current_hits]
                         for position_h in cur_boat_spaces_h:
                             if hit_overlap:
-                                score_matrix[position_h[0]-1][position_h[1]-1] += 100
+                                score_matrix[position_h[0]-1][position_h[1]-1] += 100*len(hit_overlap)
                             else:
                                 score_matrix[position_h[0]-1][position_h[1]-1] += 1
                     if cur_boat_spaces_v == v_overlap:
                         hit_overlap = [space for space in cur_boat_spaces_v if space in self.current_hits]
                         for position_v in cur_boat_spaces_v:
                             if hit_overlap:
-                                score_matrix[position_v[0]-1][position_v[1]-1] += 100
+                                score_matrix[position_v[0]-1][position_v[1]-1] += 100*len(hit_overlap)
                             else:
                                 score_matrix[position_v[0]-1][position_v[1]-1] += 1
         #print score_matrix
