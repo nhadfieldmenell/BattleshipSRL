@@ -42,6 +42,7 @@ class game(object):
         self.in_hunt_mode = True #for pdf mode
         self.sunk_ambiguous_boats = []
         self.total_moves = 0
+        self.board_states = []
 
     def print_game(self):
         sys.stdout.write('   ')
@@ -73,13 +74,14 @@ class game(object):
             self.total_moves += 1
             print "Made move in %.2fs" % (time.time()-cur_time)
             cur_time = time.time()
+            self.board_states.append([self.hits.copy(), self.misses.copy()])
         print "Won the game in %d moves" % self.total_moves
         overall_time = time.time() - start_time
         if write_data:
             with open("run" + str(run_number) + ".data", "wb") as data_file:
                 data_file.write('\n'.join(["Number of moves: %s" % str(self.total_moves), "Time taken: %f seconds" %
                                            overall_time]))
-        return self.total_moves
+        return self.board_states
 
     def adjacent_positions(self, pos):
         """Determines spaces in all four cardinal directions, regardless of validity of resulting positions.
